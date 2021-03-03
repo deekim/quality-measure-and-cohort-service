@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.RelatedArtifact;
 import org.junit.Before;
 import org.junit.Test;
+import org.opencds.cqf.common.evaluation.EvaluationProviderFactory;
 import org.opencds.cqf.common.evaluation.MeasurePopulationType;
 
 import com.ibm.cohort.engine.LibraryFormat;
@@ -45,7 +46,7 @@ public class MeasureEvaluatorTest extends BaseMeasureTest {
 	@Before
 	public void setUp() {
 		super.setUp();
-		evaluator = new MeasureEvaluator(client, client, client);
+		evaluator = new MeasureEvaluator(client);
 	}
 
 	@Test
