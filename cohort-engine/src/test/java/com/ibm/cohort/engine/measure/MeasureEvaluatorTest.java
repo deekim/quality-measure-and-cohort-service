@@ -36,6 +36,9 @@ import org.opencds.cqf.common.evaluation.MeasurePopulationType;
 
 import com.ibm.cohort.engine.LibraryFormat;
 import com.ibm.cohort.engine.measure.evidence.MeasureEvidenceOptions;
+import org.opencds.cqf.common.providers.LibraryResolutionProvider;
+import org.opencds.cqf.cql.engine.data.DataProvider;
+import org.opencds.cqf.cql.engine.terminology.TerminologyProvider;
 
 public class MeasureEvaluatorTest extends BaseMeasureTest {
 
@@ -46,7 +49,16 @@ public class MeasureEvaluatorTest extends BaseMeasureTest {
 	@Before
 	public void setUp() {
 		super.setUp();
-		evaluator = new MeasureEvaluator(client);
+
+		// TODO: Clean up with some helper something or another
+		MeasureResolutionProvider<Measure> measureProvider = new RestFhirMeasureResolutionProvider(client);
+		LibraryResolutionProvider<Library> libraryProvider = new RestFhirLibraryResolutionProvider(client);
+		EvaluationProviderFactory factory = new ProviderFactory(client, client, null);
+		TerminologyProvider terminologyProvider = factory.createTerminologyProvider(null,null,null,null,null);
+		Map<String, DataProvider> dataProviders = new HashMap<>();
+		dataProviders.put("http://hl7.org/fhir", factory.createDataProvider(null, null));
+
+		evaluator = new MeasureEvaluator(measureProvider, libraryProvider, terminologyProvider, dataProviders);
 	}
 
 	@Test

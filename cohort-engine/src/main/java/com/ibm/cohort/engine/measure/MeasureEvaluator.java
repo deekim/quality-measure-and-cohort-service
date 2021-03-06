@@ -16,6 +16,7 @@ import org.hl7.fhir.r4.model.Measure;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.opencds.cqf.common.evaluation.EvaluationProviderFactory;
 import org.opencds.cqf.common.providers.LibraryResolutionProvider;
+import org.opencds.cqf.cql.engine.data.DataProvider;
 import org.opencds.cqf.cql.engine.execution.LibraryLoader;
 
 import com.ibm.cohort.engine.measure.evidence.MeasureEvidenceOptions;
@@ -23,6 +24,7 @@ import com.ibm.cohort.engine.measure.seed.IMeasureEvaluationSeed;
 import com.ibm.cohort.engine.measure.seed.MeasureEvaluationSeeder;
 
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import org.opencds.cqf.cql.engine.terminology.TerminologyProvider;
 
 /**
  * Provide an interface for doing quality measure evaluation against a FHIR R4
@@ -32,33 +34,20 @@ public class MeasureEvaluator {
 
 	private final MeasureResolutionProvider<Measure> measureProvider;
 	private final LibraryResolutionProvider<Library> libraryProvider;
-	private final EvaluationProviderFactory providerFactory;
+	private final TerminologyProvider terminologyProvider;
+	private final Map<String, DataProvider> dataProviders;
 	private MeasurementPeriodStrategy measurementPeriodStrategy;
 
-	public MeasureEvaluator(IGenericClient fhirClient) {
-		this(
-				new ProviderFactory(fhirClient, fhirClient),
-				new RestFhirMeasureResolutionProvider(fhirClient),
-				new RestFhirLibraryResolutionProvider(fhirClient)
-		);
-	}
-
-	public MeasureEvaluator(EvaluationProviderFactory providerFactory, IGenericClient fhirClient) {
-		this(
-				providerFactory,
-				new RestFhirMeasureResolutionProvider(fhirClient),
-				new RestFhirLibraryResolutionProvider(fhirClient)
-		);
-	}
-
 	public MeasureEvaluator(
-			EvaluationProviderFactory providerFactory,
 			MeasureResolutionProvider<Measure> measureProvider,
-			LibraryResolutionProvider<Library> libraryProvider
+			LibraryResolutionProvider<Library> libraryProvider,
+			TerminologyProvider terminologyProvider,
+			Map<String, DataProvider> dataProviders
 	) {
-		this.providerFactory = providerFactory;
 		this.measureProvider = measureProvider;
 		this.libraryProvider = libraryProvider;
+		this.terminologyProvider = terminologyProvider;
+		this.dataProviders = dataProviders;
 	}
 
 	public void setMeasurementPeriodStrategy(MeasurementPeriodStrategy strategy) {
@@ -147,7 +136,7 @@ public class MeasureEvaluator {
 			Map<String, Object> parameters, MeasureEvidenceOptions evidenceOptions) {
 		LibraryLoader libraryLoader = LibraryHelper.createLibraryLoader(libraryProvider);
 
-		MeasureEvaluationSeeder seeder = new MeasureEvaluationSeeder(providerFactory, libraryLoader, libraryProvider);
+		MeasureEvaluationSeeder seeder = new MeasureEvaluationSeeder(terminologyProvider, dataProviders, libraryLoader, libraryProvider);
 		seeder.disableDebugLogging();
 
 		// TODO - consider talking with OSS project about making source, user, and pass
